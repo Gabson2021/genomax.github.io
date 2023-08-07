@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Genomax Lucky Draw</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+      crossorigin="anonymous"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <div>
+        <div
+          class="container"
+          style="
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            transform: translate(0, -50%);
+          "
+        >
+          <div class="row">
+            <div class="col-12">
+              <h1 style="font-size: 2rem">Please enter the <br />DO number:</h1>
+              <form method="POST">
+                <input
+                  name="DONum"
+                  id="DONum"
+                  type="text"
+                  placeholder="DO Number"
+                  oninput="convertToUpperCase(this)"
+                  required
+                  style="
+                    border: none;
+                    font-size: 8vw;
+                    width: 90vw;
+                    height: 80px;
+                    text-align: center;
+                    opacity: 0.65;
+                  "
+                />
+                <div
+                  id="errormsg"
+                  style="
+                    height: 4vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-around;
+                    flex-direction: column;
+                  "
+                ></div>
+                <button
+                  type="button"
+                  onclick="checkdata()"
+                  style="width: 50vw; height: 40px"
+                >
+                  Check
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function convertToUpperCase(inputElement) {
+        inputElement.value = inputElement.value.toUpperCase();
+      }
+    </script>
+    <script>
+      function checkdata() {
+        const apiURL =
+          "https://script.google.com/macros/s/AKfycbxqIOQTjKdWDbMTeT6l9kPwOMw2uBqHZQ4yis0423N-XbuoFPbsSb9S0sUFPUwYDpUXMw/exec";
+
+        // Function to get data from the API
+        async function getDataFromAPI() {
+          try {
+            const response = await fetch(apiURL);
+            if (response.ok) {
+              const data = await response.json();
+              return data;
+            } else {
+              console.error("Error fetching data:", response.status);
+              return null;
+            }
+          } catch (error) {
+            console.error("Error fetching data:", error);
+            return null;
+          }
+        }
+
+        // Function to check if specific data is inside the API response
+        function checkDataInAPI(dataToCheck, apiData) {
+          return apiData.includes(dataToCheck);
+        }
+
+        // Replace 'dataToFind' with the actual data you want to check
+        const dataToFind = document.getElementById("DONum").value;
+
+        // Step 1: Get data from the API
+        getDataFromAPI()
+          .then((apiResponse) => {
+            if (apiResponse) {
+              const donumArray = Object.values(apiResponse).map(
+                (item) => item.DONum
+              );
+
+              // Step 4: Compare user input with DONum values
+              if (donumArray.includes(dataToFind)) {
+                const container = document.getElementById("errormsg");
+                container.innerHTML = `<p style="margin-bottom: 0.5rem;">This DO Number already draw before!</p>`;
+              } else {
+                sessionStorage.setItem("DONumber", dataToFind);
+                window.location.href = "draw1.html";
+              }
+              // Step 2: Check if data is inside the API response
+            } else {
+              console.log("Failed to fetch data from the API.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+  <style>
+    body {
+      background-image: url("img/background1.svg");
+      height: 100vh;
+    }
+  </style>
+</html>

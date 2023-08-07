@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Genomax Lucky Draw</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div>
+      <div
+        class="container"
+        style="
+          text-align: center;
+          position: absolute;
+          top: 50%;
+          transform: translate(0, -50%);
+        "
+      >
+        <div class="row">
+          <div class="col-12">
+            <div>
+              <h1>Your DO number is:</h1>
+              <h1 id="dataDisplay" style="font-size: calc(2.5rem + 1.5vw)"></h1>
+            </div>
+          </div>
+        </div>
+        <br /><br /><br />
+        <div id="firework" class="pyro d-none">
+          <div class="before"></div>
+          <div class="after"></div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <h1>LUCKY DRAW</h1>
+          </div>
+          <div class="col-12">
+            <div>
+              <ul id="slideshow">
+                <li id="RM10">
+                  <img src="img/rm10.jpg" alt="" style="width: 70vw" />
+                </li>
+                <li id="RM20">
+                  <img src="img/rm20.jpg" alt="" style="width: 70vw" />
+                </li>
+                <li id="RM50">
+                  <img src="img/rm50.jpg" alt="" style="width: 70vw" />
+                </li>
+                <li id="RM100">
+                  <img src="img/rm100.jpg" alt="" style="width: 70vw" />
+                </li>
+              </ul>
+              <button id="again" style="width: 50vw; height: 40px">DRAW</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check session storage or perform other actions after DOM loads
+        const storedData = sessionStorage.getItem("DONumber");
+        if (storedData) {
+        } else {
+          window.location.href = "/index.html";
+        }
+      });
+    </script>
+    <script>
+      function displayDataInH3() {
+        const storedData = sessionStorage.getItem("DONumber"); // Replace 'myData' with your key
+        const h3Element = document.getElementById("dataDisplay");
+        h3Element.textContent = storedData ? storedData : "Data not found";
+      }
+      document.addEventListener("DOMContentLoaded", displayDataInH3);
+    </script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+      function pulldata() {
+        const apiURL =
+          "https://script.google.com/macros/s/AKfycbxqIOQTjKdWDbMTeT6l9kPwOMw2uBqHZQ4yis0423N-XbuoFPbsSb9S0sUFPUwYDpUXMw/exec";
+
+        // Function to get data from the API
+        async function getDataFromAPI() {
+          try {
+            const response = await fetch(apiURL);
+            if (response.ok) {
+              const data = await response.json();
+              return data;
+            } else {
+              console.error("Error fetching data:", response.status);
+              return null;
+            }
+          } catch (error) {
+            console.error("Error fetching data:", error);
+            return null;
+          }
+        }
+
+        // Function to check if specific data is inside the API response
+        function checkDataInAPI(dataToCheck, apiData) {
+          return apiData.includes(dataToCheck);
+        }
+
+        // Step 1: Get data from the API
+        getDataFromAPI()
+          .then((apiResponse) => {
+            if (apiResponse) {
+              const donumArray = Object.values(apiResponse).map(
+                (item) => item.DONum === ""
+              );
+              const amountwinArray = Object.values(apiResponse)
+                .map((item) => {
+                  if (item.DONum === "") {
+                    return item.AmountWin; // Include the AmountWin if DONum is empty
+                  } else {
+                    return null; // Exclude the AmountWin if DONum is not empty
+                  }
+                })
+                .filter((amountWin) => amountWin !== null);
+              // Step 4: Compare user input with DONum values
+              if (donumArray) {
+                const AMTWIN = amountwinArray;
+                function getRandomElement(arr) {
+                  const randomIndex = Math.floor(Math.random() * arr.length);
+                  return arr[randomIndex];
+                }
+
+                // Get a random AmountWin using the getRandomElement function
+                const randomAmountWin = getRandomElement(AMTWIN);
+                sessionStorage.setItem("AmountWin", randomAmountWin);
+                // const donum = sessionStorage.getItem("DONumber");
+              }
+
+              // Step 2: Check if data is inside the API response
+            } else {
+              console.log("Failed to fetch data from the API.");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+      pulldata();
+    </script>
+    <script>
+      function handleBeforeUnload(event) {
+        sessionStorage.clear();
+      }
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      var slides = $("#slideshow").find("li");
+
+      // move all to the right.
+      slides.addClass("in");
+
+      // move first one to current.
+      $(slides[0]).removeClass().addClass("current");
+
+      var currentIndex = 0;
+
+      var minimumCount = 20;
+      var maximumCount = 200;
+      var count = 0;
+
+      function nextSlide() {
+        $("#again").attr("disabled", "disabled");
+        currentIndex += 1;
+        if (currentIndex >= slides.length) {
+          currentIndex = 0;
+        }
+
+        // move any previous 'out' slide to the right side.
+        $(".out").removeClass().addClass("in");
+
+        // move current to left.
+        $(".current").removeClass().addClass("out");
+
+        // move next one to current.
+
+        $(slides[currentIndex]).removeClass().addClass("current");
+
+        count += 1;
+        if (
+          count > maximumCount ||
+          (count > minimumCount && Math.random() > 0.3)
+        ) {
+          clearInterval(interval);
+
+          $("#again").removeAttr("disabled");
+          var existelement = document.querySelector(".current");
+          $(existelement).removeClass().addClass("in");
+          const slidestop = sessionStorage.getItem("AmountWin");
+          var element = document.getElementById(slidestop);
+          console.log(element);
+          $(element).removeClass().addClass("current");
+          const previousLi = element.previousElementSibling;
+          const nextLi = element.nextElementSibling;
+          $(previousLi).removeClass().addClass("out");
+          $(nextLi).removeClass().addClass("in");
+          const fire = document.getElementById("firework");
+          const button = document.getElementById("again");
+          //key in data to google sheet
+          const doNumberFromSession = sessionStorage.getItem("DONumber");
+          const amountWinFromSession = sessionStorage.getItem("AmountWin");
+
+          // Prepare the data to send to Google Apps Script
+          const formData = new FormData();
+          formData.append("do_number", doNumberFromSession);
+          formData.append("amount_win", amountWinFromSession);
+
+          //   Send the data to Google Apps Script
+          fetch(
+            "https://script.google.com/macros/s/AKfycbzEwshno0dC5xFh6fmPIa1I0UlIZcrTq_ziFCa98dyN5kgBWbLeMfs15Ym7xYpHC2gv/exec",
+            {
+              method: "POST",
+              body: formData,
+            }
+          )
+            .then((response) => response.text())
+            .then((message) => console.log(message))
+            .catch((error) => console.error(error));
+
+          $(fire).removeClass("d-none");
+          $(button).addClass("d-none");
+          setTimeout(redirect, 4000);
+          function redirect() {
+            alert("Congratulation, U won " + slidestop + " !");
+            window.location.href = "/index.html";
+          }
+        }
+      }
+
+      //   var interval = setInterval(nextSlide, 120);
+
+      $("#again").click(function () {
+        count = 0;
+        interval = setInterval(nextSlide, 120);
+      });
+    </script>
+    <style>
+      body {
+        background-image: url("img/background1.svg");
+        height: 100vh;
+      }
+      /* reset */
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
+
+      /* slideshow */
+
+      ul {
+        height: 200px;
+
+        margin: 0 auto;
+
+        position: relative;
+
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        -webkit-perspective: 700px;
+        perspective: 700px;
+      }
+
+      li {
+        position: absolute;
+
+        transform-origin: 0 100%;
+      }
+      li.current {
+        transition: all 0.4s ease-out;
+        opacity: 1;
+      }
+      li.in {
+        opacity: 0;
+        transform: rotate3d(1, 0, 0, -90deg);
+      }
+      li.out {
+        transition: all 0.4s ease-out;
+        opacity: 0;
+        transform: rotate3d(1, 0, 0, 90deg);
+      }
+      .pyro > .before,
+      .pyro > .after {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        box-shadow: -120px -218.66667px blue, 248px -16.66667px #00ff84,
+          190px 16.33333px #002bff, -113px -308.66667px #ff009d,
+          -109px -287.66667px #ffb300, -50px -313.66667px #ff006e,
+          226px -31.66667px #ff4000, 180px -351.66667px #ff00d0,
+          -12px -338.66667px #00f6ff, 220px -388.66667px #99ff00,
+          -69px -27.66667px #ff0400, -111px -339.66667px #6200ff,
+          155px -237.66667px #00ddff, -152px -380.66667px #00ffd0,
+          -50px -37.66667px #00ffdd, -95px -175.66667px #a6ff00,
+          -88px 10.33333px #0d00ff, 112px -309.66667px #005eff,
+          69px -415.66667px #ff00a6, 168px -100.66667px #ff004c,
+          -244px 24.33333px #ff6600, 97px -325.66667px #ff0066,
+          -211px -182.66667px #00ffa2, 236px -126.66667px #b700ff,
+          140px -196.66667px #9000ff, 125px -175.66667px #00bbff,
+          118px -381.66667px #ff002f, 144px -111.66667px #ffae00,
+          36px -78.66667px #f600ff, -63px -196.66667px #c800ff,
+          -218px -227.66667px #d4ff00, -134px -377.66667px #ea00ff,
+          -36px -412.66667px #ff00d4, 209px -106.66667px #00fff2,
+          91px -278.66667px #000dff, -22px -191.66667px #9dff00,
+          139px -392.66667px #a6ff00, 56px -2.66667px #0099ff,
+          -156px -276.66667px #ea00ff, -163px -233.66667px #00fffb,
+          -238px -346.66667px #00ff73, 62px -363.66667px #0088ff,
+          244px -170.66667px #0062ff, 224px -142.66667px #b300ff,
+          141px -208.66667px #9000ff, 211px -285.66667px #ff6600,
+          181px -128.66667px #1e00ff, 90px -123.66667px #c800ff,
+          189px 70.33333px #00ffc8, -18px -383.66667px #00ff33,
+          100px -6.66667px #ff008c;
+        animation: 1s bang ease-out infinite backwards,
+          1s gravity ease-in infinite backwards,
+          5s position linear infinite backwards;
+      }
+
+      .pyro > .after {
+        animation-delay: 1.25s, 1.25s, 1.25s;
+        animation-duration: 1.25s, 1.25s, 6.25s;
+      }
+
+      @keyframes bang {
+        from {
+          box-shadow: 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white, 0 0 white,
+            0 0 white, 0 0 white, 0 0 white, 0 0 white;
+        }
+      }
+
+      @keyframes gravity {
+        to {
+          transform: translateY(200px);
+          opacity: 0;
+        }
+      }
+
+      @keyframes position {
+        0%,
+        19.9% {
+          margin-top: 10%;
+          margin-left: 40%;
+        }
+
+        20%,
+        39.9% {
+          margin-top: 40%;
+          margin-left: 30%;
+        }
+
+        40%,
+        59.9% {
+          margin-top: 20%;
+          margin-left: 70%;
+        }
+
+        60%,
+        79.9% {
+          margin-top: 30%;
+          margin-left: 20%;
+        }
+
+        80%,
+        99.9% {
+          margin-top: 30%;
+          margin-left: 80%;
+        }
+      }
+    </style>
+  </body>
+</html>
