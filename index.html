@@ -14,18 +14,30 @@
   </head>
   <body>
     <div>
-      <div>
-        <div
-          class="container"
-          style="
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            transform: translate(0, -50%);
-          "
-        >
+      <div
+        class="container-fluid"
+        style="
+          width: 100vw;
+          height: 100vh;
+          padding: calc(var(--bs-gutter-x) * 0.5);
+        "
+      >
+        <div style="background-color: #f2f0e8; border-radius: 50px">
           <div class="row">
-            <div class="col-12">
+            <div
+              class="col-12"
+              style="
+                display: flex;
+                height: 97.5vh;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+              "
+            >
+              <div style="display: flex; justify-content: space-around">
+                <img class="logoimg" src="GenomaxLogo.png" alt="" />
+              </div>
+              <br /><br /><br />
               <h1 style="font-size: 2rem">Please enter the <br />DO number:</h1>
               <form method="POST">
                 <input
@@ -38,8 +50,7 @@
                   required
                   style="
                     border: none;
-                    font-size: 8vw;
-                    width: 90vw;
+                    font-size: 2rem;
                     height: 80px;
                     text-align: center;
                     opacity: 0.65;
@@ -63,6 +74,10 @@
                   Check
                 </button>
               </form>
+              <br /><br /><br />
+              <div style="display: flex; justify-content: space-around">
+                <img class="logoimg" src="EVOSSLogo.png" alt="" />
+              </div>
             </div>
           </div>
         </div>
@@ -75,67 +90,86 @@
     </script>
     <script>
       function checkdata() {
-        const apiURL =
-          "https://script.google.com/macros/s/AKfycbxqIOQTjKdWDbMTeT6l9kPwOMw2uBqHZQ4yis0423N-XbuoFPbsSb9S0sUFPUwYDpUXMw/exec";
+        var input = document.getElementById("DONum");
+        if (input.value.length !== 7) {
+          const container = document.getElementById("errormsg");
+          container.innerHTML = `<p style="margin-bottom: 0.5rem; color: red;">DO Number is 7 digit only!</p>`;
+        } else {
+          const apiURL =
+            "https://script.google.com/macros/s/AKfycbxqIOQTjKdWDbMTeT6l9kPwOMw2uBqHZQ4yis0423N-XbuoFPbsSb9S0sUFPUwYDpUXMw/exec";
 
-        // Function to get data from the API
-        async function getDataFromAPI() {
-          try {
-            const response = await fetch(apiURL);
-            if (response.ok) {
-              const data = await response.json();
-              return data;
-            } else {
-              console.error("Error fetching data:", response.status);
+          // Function to get data from the API
+          async function getDataFromAPI() {
+            try {
+              const response = await fetch(apiURL);
+              if (response.ok) {
+                const data = await response.json();
+                return data;
+              } else {
+                console.error("Error fetching data:", response.status);
+                return null;
+              }
+            } catch (error) {
+              console.error("Error fetching data:", error);
               return null;
             }
-          } catch (error) {
-            console.error("Error fetching data:", error);
-            return null;
           }
-        }
 
-        // Function to check if specific data is inside the API response
-        function checkDataInAPI(dataToCheck, apiData) {
-          return apiData.includes(dataToCheck);
-        }
+          // Function to check if specific data is inside the API response
+          function checkDataInAPI(dataToCheck, apiData) {
+            return apiData.includes(dataToCheck);
+          }
 
-        // Replace 'dataToFind' with the actual data you want to check
-        const dataToFind = document.getElementById("DONum").value;
+          // Replace 'dataToFind' with the actual data you want to check
+          const dataToFind = document.getElementById("DONum").value;
 
-        // Step 1: Get data from the API
-        getDataFromAPI()
-          .then((apiResponse) => {
-            if (apiResponse) {
-              const donumArray = Object.values(apiResponse).map(
-                (item) => item.DONum
-              );
+          // Step 1: Get data from the API
+          getDataFromAPI()
+            .then((apiResponse) => {
+              if (apiResponse) {
+                const donumArray = Object.values(apiResponse).map(
+                  (item) => item.DONum
+                );
 
-              // Step 4: Compare user input with DONum values
-              if (donumArray.includes(dataToFind)) {
-                const container = document.getElementById("errormsg");
-                container.innerHTML = `<p style="margin-bottom: 0.5rem;">This DO Number already draw before!</p>`;
+                // Step 4: Compare user input with DONum values
+                if (donumArray.includes(dataToFind)) {
+                  const container = document.getElementById("errormsg");
+                  container.innerHTML = `<p style="margin-bottom: 0.5rem; color: red;">This DO Number already draw before!</p>`;
+                } else {
+                  sessionStorage.setItem("DONumber", dataToFind);
+                  window.location.href = "draw1.html";
+                }
+                // Step 2: Check if data is inside the API response
               } else {
-                sessionStorage.setItem("DONumber", dataToFind);
-                window.location.href = "draw1.html";
+                console.log("Failed to fetch data from the API.");
               }
-              // Step 2: Check if data is inside the API response
-            } else {
-              console.log("Failed to fetch data from the API.");
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        }
       }
     </script>
   </body>
   <style>
     body {
-      background-image: url("background.svg");
-      height: 100vh;
-      width: 100vw;
-      background-repeat: no-repeat;
+      background-color: #b8c93c;
+    }
+    @media screen and (min-width: 900px) {
+      .logoimg {
+        width: 30vw;
+      }
+      #DONum {
+        width: 65vw;
+      }
+    }
+    @media screen and (max-width: 899px) {
+      .logoimg {
+        width: 85vw;
+      }
+      #DONum {
+        width: 85vw;
+      }
     }
   </style>
 </html>
